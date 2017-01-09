@@ -1,0 +1,51 @@
+name: "app"
+type: "ruby:2.3"
+
+web:
+    upstream:
+      # will be defined in an environment variable named SOCKET so unicorn can bind on that
+      socket_family: "unix"
+
+    commands:
+      start: "unicorn -l $SOCKET -E production config.ru"
+
+    locations:
+        "/":
+            root: "public"
+            passthru: true
+            expires: 1h
+            allow: true
+
+relationships:
+    database: "mysqldb:mysql"
+
+mounts:
+  "public/system": "shared:files/publicsystem"
+  "log": "shared:files/log"
+  "tmp": "shared:files/tmp"
+  "texlive": "shared:files/texlive"
+
+disk: 8000
+
+hooks:
+    build: |
+      gem install bundler
+      bundle install --jobs 6 --without development test
+      #that is not set within the build hook for some reason?
+      #echo $PLATFORM_TREE_ID > CURRENT_REVISION
+      echo "psh" > CURRENT_REVISION
+      bundle exec rake assets:precompile
+    deploy: |
+      if [ ! -f texlive/installed ]; then
+        #latex install
+        cd texlive
+        rsync -av --exclude '*.doc.*' rsync://ftp.fau.de/ctan/systems/texlive/tlnet/ .
+        echo "I" | TEXLIVE_INSTALL_PREFIX=. ./install-tl --in-place
+        ./update-tlmgr-latest.sh
+        tlmgr install collection-xetex
+        touch installed
+        cd ..
+        #general install
+        rake db:setup
+      fi;
+      rake db:migrate

@@ -1,0 +1,5 @@
+# See https://docs.platform.sh/user_guide/reference/services-yaml.html
+
+mysqldb:
+  type: mysql
+  disk: 2048

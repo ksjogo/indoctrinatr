@@ -32,6 +32,13 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 # Use debugger
 # gem 'debugger', group: [:development, :test]
 
+# platformsh hosting requirements
+gem 'platform_sh_rails'
+group :production do
+  gem 'mysql2', '~> 0.4.5'
+  gem 'unicorn', '~> 5.2.0'
+end
+
 # Frontend stuff
 gem 'foundation-rails', '~> 5.5'
 gem 'simple_form', '~> 3.1.0'

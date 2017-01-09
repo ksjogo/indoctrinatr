@@ -1,0 +1,3 @@
+export PATH=/app/texlive/2016/bin/x86_64-linux:$PATH
+export RAILS_ENV=production
+export RACK_ENV=production
